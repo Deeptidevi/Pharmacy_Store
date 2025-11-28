@@ -8,7 +8,9 @@
     "server": "npm run start --prefix server",
     "client": "npm run dev --prefix client",
     "setup": "concurrently  \"cd server && npm install\" \"cd client && npm install\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "help": "echo \"Available scripts:\n npm run: { \n start: for running both server and client together,\n server: for running server only ,\n client: for running client only,\n setup: for installing dependencies in both server and client in 1 time , \n help: for showing this help message \n}\""
+
   },
   "author": "",
   "license": "ISC",

@@ -252,7 +252,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-lg mb-4">Ready to transform your pharmacy?</p>
           <button className="px-8 py-3 bg-indigo-600 rounded-lg font-bold hover:bg-indigo-700 transition-all mb-8">
-            Start Free Trial
+            Get Started Today
           </button>
           <p className="text-gray-400 text-sm">© 2024 Pharmacy Store. All rights reserved.</p>
         </div>

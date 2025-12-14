@@ -1,7 +1,11 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const Admin = require('./model/Admin.js');
+const Customer = require('./model/Customer.js');
 const Medicine = require('./model/Medicine.js');
+const Order = require('./model/Order.js');
 const mongoose = require('mongoose');
 const path = require('path');
 const app = express();
@@ -9,6 +13,7 @@ const cors = require('cors');
 
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_in_production';
 app.use(express.json());
 
 app.use(cors(
@@ -41,9 +46,10 @@ app.post('/admin_register', async (req, res) => {
             return res.status(400).json({ message: "Account already exists" });
         }else{
         
+        const hashedPassword = await bcrypt.hash(password, 10);
         const newAdmin = await Admin.create({
             email,
-            password
+            password: hashedPassword
         });
 
        
@@ -57,19 +63,68 @@ app.post('/admin_register', async (req, res) => {
 app.post('/admin_login', async (req, res) => {
     try{
         const { email, password } = req.body;
-        const admin = await Admin.findOne({
-            email,
-            password
-        });
+        const admin = await Admin.findOne({ email });
 
-        if(admin){
-            res.status(200).json({ message: "Login Successful" });
+        if(admin && (await bcrypt.compare(password, admin.password))){
+            const token = jwt.sign(
+                { id: admin._id, email: admin.email, role: 'admin' },
+                JWT_SECRET,
+                { expiresIn: '1d' }
+            );
+            res.status(200).json({ message: "Login Successful", token });
         }
         else{
             res.status(401).json({ message: "Invalid Credentials" });
         }
 
         
+    }catch(err){
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
+app.post('/customer_register', async (req, res) => {
+    const { name, email, phone, password } = req.body;
+    try{
+        let isCustomerExist = await Customer.findOne({email});
+        if(isCustomerExist){
+            return res.status(400).json({ message: "Account already exists" });
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newCustomer = await Customer.create({
+            name,
+            email,
+            phone,
+            password: hashedPassword
+        });
+
+        res.status(201).json({ message: "Customer Registered Successfully" });
+    }catch(err){
+        res.status(500).json({ message: "Server Error", error: err.message });
+    }
+});
+
+app.post('/customer_login', async (req, res) => {
+    try{
+        const { email, password } = req.body;
+        const customer = await Customer.findOne({ email });
+
+        if(customer && (await bcrypt.compare(password, customer.password))){
+            const token = jwt.sign(
+                { id: customer._id, email: customer.email, role: 'customer' },
+                JWT_SECRET,
+                { expiresIn: '1d' }
+            );
+            res.status(200).json({ 
+                message: "Login Successful", 
+                token,
+                customer: { name: customer.name, email: customer.email } 
+            });
+        }
+        else{
+            res.status(401).json({ message: "Invalid Credentials" });
+        }
     }catch(err){
         res.status(500).json({ message: "Server Error" });
     }
@@ -266,6 +321,85 @@ app.get('/api/dashboard/activity', async (req, res) => {
         res.status(200).json(recentActivities);
     } catch (err) {
         res.status(500).json({ message: "Error fetching activity feed", error: err.message });
+    }
+});
+
+// ORDER ROUTES
+
+// GET all orders
+app.get('/api/orders', async (req, res) => {
+    try {
+        const orders = await Order.find().sort({ createdAt: -1 });
+        res.status(200).json(orders);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching orders", error: err.message });
+    }
+});
+
+// PUT - Update order status/notes
+app.put('/api/orders/:id', async (req, res) => {
+    try {
+        const { status, notes } = req.body;
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status, notes },
+            { new: true }
+        );
+        if (!updatedOrder) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        res.status(200).json({ message: "Order updated successfully", order: updatedOrder });
+    } catch (err) {
+        res.status(500).json({ message: "Error updating order", error: err.message });
+    }
+});
+
+// ADMIN PROFILE ROUTES
+
+// GET admin profile (assuming single admin or first found for now)
+app.get('/api/admin/profile', async (req, res) => {
+    try {
+        // In a real app, get ID from auth token. Here we just get the first admin.
+        const admin = await Admin.findOne();
+        if (!admin) {
+            return res.status(404).json({ message: "Admin profile not found" });
+        }
+        res.status(200).json(admin);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching profile", error: err.message });
+    }
+});
+
+// PUT - Update admin profile
+app.put('/api/admin/profile', async (req, res) => {
+    try {
+        const { name, email, phone, currentPassword, newPassword } = req.body;
+        
+        // Find the admin (assuming single admin)
+        const admin = await Admin.findOne();
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        // Update basic info
+        if (name) admin.name = name;
+        if (email) admin.email = email;
+        if (phone) admin.phone = phone;
+
+        // Update password if provided
+        if (newPassword) {
+            // In a real app, verify currentPassword first
+            if (currentPassword && currentPassword === admin.password) {
+                 admin.password = newPassword;
+            } else if (currentPassword) {
+                 return res.status(400).json({ message: "Incorrect current password" });
+            }
+        }
+
+        await admin.save();
+        res.status(200).json({ message: "Profile updated successfully", admin });
+    } catch (err) {
+        res.status(500).json({ message: "Error updating profile", error: err.message });
     }
 });
 

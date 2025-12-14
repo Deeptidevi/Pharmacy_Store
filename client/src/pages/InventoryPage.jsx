@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
-
 const API_URL = "http://localhost:5000/api/medicines";
 
 export const InventoryPage = () => {

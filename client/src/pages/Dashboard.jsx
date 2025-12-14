@@ -4,6 +4,7 @@ import {
   Box, 
   ClipboardList, 
   Users, 
+  User,
   TrendingUp, 
   ArrowRight, 
   AlertCircle, 
@@ -87,16 +88,22 @@ const Dashboard = () => {
           </p>
         </div>
         
-        {/* Search Bar Placeholder */}
-        <div className="relative group">
-           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-             <Search size={16} className="text-gray-400 group-focus-within:text-black transition-colors" />
-           </div>
-           <input 
-             type="text" 
-             placeholder="Search inventory..." 
-             className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm w-full md:w-96 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all shadow-sm"
-           />
+        {/* Search Bar & Profile */}
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+               <Search size={16} className="text-gray-400 group-focus-within:text-black transition-colors" />
+             </div>
+             <input 
+               type="text" 
+               placeholder="Search inventory..." 
+               className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm w-full md:w-64 lg:w-96 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all shadow-sm"
+             />
+          </div>
+
+          <Link to="/admin/profile" className="w-11 h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-black hover:border-black transition-all shadow-sm" title="Admin Profile">
+            <User size={20} />
+          </Link>
         </div>
       </header>
 

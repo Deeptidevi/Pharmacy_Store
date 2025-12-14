@@ -8,6 +8,7 @@ import Login from "../pages/Auth/login.jsx";
 import Register from "../pages/Auth/register.jsx";
 import Dashboard from "../pages/Dashboard.jsx";
 import CustomerRegister from "../pages/Auth/customer_register.jsx";
+import CustomerLogin from "../pages/Auth/customer_login.jsx";
 
 
 export default function AppRoutes() {
@@ -24,6 +25,7 @@ export default function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/customer/register" element={<CustomerRegister />} />
+        <Route path="/customer/login" element={<CustomerLogin />} />
       </Routes>
     </BrowserRouter>
   );

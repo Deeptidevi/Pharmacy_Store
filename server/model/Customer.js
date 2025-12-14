@@ -3,10 +3,29 @@ const mongoose = require('mongoose');
 
 
  const customerSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    password: String,
-    role: { type: String, default: 'user' },
-})
+    name: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    phone: {
+        type: String,
+        default: ""
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    role: { 
+        type: String, 
+        default: 'customer' 
+    }
+}, {
+    timestamps: true
+});
 
-export default mongoose.model('User', customerSchema);
+module.exports = mongoose.model('Customer', customerSchema);

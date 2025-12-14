@@ -22,6 +22,7 @@ const Login = () => {
                 if (contentType && contentType.indexOf("application/json") !== -1) {
                     const data = await response.json();
                     if (response.ok) {
+                        localStorage.setItem('adminToken', data.token);
                         navigate('/dashboard');
                     } else {
                         setError(data.message || 'Login failed');

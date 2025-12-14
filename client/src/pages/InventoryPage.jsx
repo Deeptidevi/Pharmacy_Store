@@ -1,27 +1,10 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export const InventoryPage = () =>  {
-  const [medicines, setMedicines] = useState([
-    {
-      id: 1,
-      name: "Paracetamol",
-      category: "Pain Relief",
-      price: 50,
-      quantity: 8,
-      expiry: "2024-02-10",
-      manufacturer: "Pharma Ltd",
-    },
-    {
-      id: 2,
-      name: "Amoxicillin",
-      category: "Antibiotic",
-      price: 120,
-      quantity: 25,
-      expiry: "2025-01-01",
-      manufacturer: "Medico Pvt Ltd",
-    },
-  ]);
+const API_URL = "http://localhost:5000/api/medicines";
+
+export const InventoryPage = () => {
+  const [medicines, setMedicines] = useState([]);
 
   const [newMed, setNewMed] = useState({
     name: "",
@@ -38,48 +21,150 @@ export const InventoryPage = () =>  {
 
   const [editingMed, setEditingMed] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // FETCH ALL MEDICINES
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
+
+  const fetchMedicines = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setMedicines(data);
+    } catch (error) {
+      console.error("Error fetching medicines:", error);
+      alert("Failed to fetch medicines from server");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ADD MEDICINE
-  const addMedicine = () => {
-    if (!newMed.name || !newMed.category || !newMed.price) return alert("Fill all fields!");
-    setMedicines([...medicines, { ...newMed, id: Date.now() }]);
-    setNewMed({
-      name: "",
-      category: "",
-      price: "",
-      quantity: "",
-      expiry: "",
-      manufacturer: "",
-    });
+  const addMedicine = async () => {
+    if (!newMed.name || !newMed.category || !newMed.price || !newMed.quantity || !newMed.expiry || !newMed.manufacturer) {
+      return alert("Fill all fields!");
+    }
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newMed),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert(data.message);
+        setNewMed({
+          name: "",
+          category: "",
+          price: "",
+          quantity: "",
+          expiry: "",
+          manufacturer: "",
+        });
+        fetchMedicines(); // Refresh the list
+      } else {
+        alert(data.message || "Failed to add medicine");
+      }
+    } catch (error) {
+      console.error("Error adding medicine:", error);
+      alert("Failed to add medicine to server");
+    }
   };
 
   // UPDATE MEDICINE
-  const updateMedicine = () => {
-    setMedicines(
-      medicines.map((m) => (m.id === editingMed.id ? { ...editingMed } : m))
-    );
-    setEditingMed(null);
+  const updateMedicine = async () => {
+    try {
+      const response = await fetch(`${API_URL}/${editingMed._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editingMed),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert(data.message);
+        setEditingMed(null);
+        fetchMedicines(); // Refresh the list
+      } else {
+        alert(data.message || "Failed to update medicine");
+      }
+    } catch (error) {
+      console.error("Error updating medicine:", error);
+      alert("Failed to update medicine");
+    }
   };
 
   // DELETE MEDICINE
-  const deleteMedicine = () => {
-    setMedicines(medicines.filter((m) => m.id !== confirmDelete));
-    setConfirmDelete(null);
+  const deleteMedicine = async () => {
+    try {
+      const response = await fetch(`${API_URL}/${confirmDelete}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert(data.message);
+        setConfirmDelete(null);
+        fetchMedicines(); // Refresh the list
+      } else {
+        alert(data.message || "Failed to delete medicine");
+      }
+    } catch (error) {
+      console.error("Error deleting medicine:", error);
+      alert("Failed to delete medicine");
+    }
   };
 
-  // STATUS COLOR
-  const getStatusColor = (med) => {
+  // FORMAT DATE FOR DISPLAY
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+  };
+
+  // STATUS BADGE COMPONENT
+  const StatusBadge = ({ med }) => {
     const today = new Date();
     const expiryDate = new Date(med.expiry);
-    if (expiryDate < today) return "bg-red-100 border-red-500";
-    if (med.quantity < 10) return "bg-yellow-100 border-yellow-500";
-    return "bg-green-100 border-green-500";
+
+    if (expiryDate < today) {
+      return (
+        <span className="px-3 py-1 bg-black text-white text-xs font-bold uppercase tracking-wider">
+          Expired
+        </span>
+      );
+    }
+    if (med.quantity < 10) {
+      return (
+        <span className="px-3 py-1 border border-black text-black text-xs font-bold uppercase tracking-wider">
+          Low Stock
+        </span>
+      );
+    }
+    return (
+      <span className="px-3 py-1 bg-gray-200 text-gray-600 text-xs font-bold uppercase tracking-wider">
+        In Stock
+      </span>
+    );
   };
 
   // FILTERED DATA
   const filteredMedicines = medicines
     .filter((med) => med.name.toLowerCase().includes(search.toLowerCase()))
-    .filter((med) => (filterCategory === "All" ? med : med.category === filterCategory))
+    .filter((med) =>
+      filterCategory === "All" ? med : med.category === filterCategory
+    )
     .sort((a, b) => {
       if (sortBy === "price") return a.price - b.price;
       if (sortBy === "quantity") return a.quantity - b.quantity;
@@ -87,226 +172,262 @@ export const InventoryPage = () =>  {
       return 0;
     });
 
+  const inputClass =
+    "w-full p-3 border border-gray-300 rounded-none focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-white";
+
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-blue-700">Inventory Management</h1>
+    <div className="p-8 bg-gray-50 min-h-screen font-sans text-gray-900">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-extrabold mb-8 tracking-tight text-black text-center">
+          Inventory
+        </h1>
 
-      {/* SEARCH + FILTER */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search medicine..."
-          className="p-3 rounded-lg border shadow-sm"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <select
-          className="p-3 rounded-lg border shadow-sm"
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-        >
-          <option>All</option>
-          <option>Pain Relief</option>
-          <option>Antibiotic</option>
-          <option>Vitamin</option>
-        </select>
-
-        <select
-          className="p-3 rounded-lg border shadow-sm"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="">Sort By</option>
-          <option value="price">Price</option>
-          <option value="quantity">Quantity</option>
-          <option value="expiry">Expiry Date</option>
-        </select>
-      </div>
-
-      {/* ⭐ New Modern Add Medicine Section */}
-      <div className="bg-white p-8 rounded-xl shadow-lg mb-10 border border-gray-200">
-        <h2 className="text-2xl font-bold mb-6 text-blue-700">Add Medicine</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold mb-1">Medicine Name</label>
-            <input
-              type="text"
-              placeholder="Paracetamol"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              value={newMed.name}
-              onChange={(e) => setNewMed({ ...newMed, name: e.target.value })}
-            />
+        {loading && (
+          <div className="text-center py-8">
+            <p className="text-gray-600">Loading medicines...</p>
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-semibold mb-1">Category</label>
-            <input
-              type="text"
-              placeholder="Pain Relief / Antibiotic"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              value={newMed.category}
-              onChange={(e) => setNewMed({ ...newMed, category: e.target.value })}
-            />
-          </div>
+        {/* SEARCH + FILTER */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <input
+            type="text"
+            placeholder="Search medicine..."
+            className={inputClass}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-          <div>
-            <label className="block text-sm font-semibold mb-1">Price (₹)</label>
-            <input
-              type="number"
-              placeholder="120"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              value={newMed.price}
-              onChange={(e) => setNewMed({ ...newMed, price: e.target.value })}
-            />
-          </div>
+          <select
+            className={inputClass}
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+          >
+            <option>All</option>
+            <option>Pain Relief</option>
+            <option>Antibiotic</option>
+            <option>Vitamin</option>
+            <option>Antiseptic</option>
+            <option>Supplement</option>
+          </select>
 
-          <div>
-            <label className="block text-sm font-semibold mb-1">Quantity</label>
-            <input
-              type="number"
-              placeholder="50"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              value={newMed.quantity}
-              onChange={(e) => setNewMed({ ...newMed, quantity: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-1">Expiry Date</label>
-            <input
-              type="date"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              value={newMed.expiry}
-              onChange={(e) => setNewMed({ ...newMed, expiry: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-1">Manufacturer</label>
-            <input
-              type="text"
-              placeholder="ABC Pharma Ltd."
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              value={newMed.manufacturer}
-              onChange={(e) => setNewMed({ ...newMed, manufacturer: e.target.value })}
-            />
-          </div>
+          <select
+            className={inputClass}
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="">Sort By</option>
+            <option value="price">Price</option>
+            <option value="quantity">Quantity</option>
+            <option value="expiry">Expiry Date</option>
+          </select>
         </div>
 
-        <button
-          onClick={addMedicine}
-          className="mt-6 bg-blue-700 text-white px-8 py-3 rounded-lg hover:bg-blue-800 font-semibold shadow-md"
-        >
-          ➕ Add Medicine
-        </button>
-      </div>
+        {/* ADD MEDICINE SECTION */}
+        <div className="bg-white p-8 mb-12 border border-gray-200 shadow-sm">
+          <h2 className="text-xl font-bold mb-6 text-black border-b border-gray-100 pb-4">
+            Add New Item
+          </h2>
 
-      {/* MEDICINE LIST */}
-      <h2 className="text-2xl font-bold mb-4">Inventory List</h2>
-
-      <div className="grid grid-cols-1 gap-5">
-        {filteredMedicines.map((med) => (
-          <motion.div
-            key={med.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.3 }}
-            className={`p-5 border-l-8 rounded-xl shadow-md ${getStatusColor(med)}`}
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-bold">{med.name}</h3>
-
-                <p className="text-sm text-gray-600">
-                  Expiry in:{" "}
-                  <span className="font-bold">
-                    {Math.floor(
-                      (new Date(med.expiry) - new Date()) /
-                        (1000 * 60 * 60 * 24)
-                    )}{" "}
-                    days
-                  </span>
-                </p>
-
-                <p>Category: {med.category}</p>
-                <p>Price: ₹{med.price}</p>
-
-                <p>
-                  Quantity:{" "}
-                  <span
-                    className={
-                      med.quantity < 10
-                        ? "text-yellow-700 font-bold animate-pulse"
-                        : "text-black"
-                    }
-                  >
-                    {med.quantity}
-                  </span>
-                </p>
-
-                <p>Manufacturer: {med.manufacturer}</p>
-              </div>
-
-              <div className="space-x-3">
-                <button
-                  onClick={() => setEditingMed(med)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() => setConfirmDelete(med.id)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-gray-500">
+                Medicine Name
+              </label>
+              <input
+                type="text"
+                placeholder="Paracetamol"
+                className={inputClass}
+                value={newMed.name}
+                onChange={(e) => setNewMed({ ...newMed, name: e.target.value })}
+              />
             </div>
-          </motion.div>
-        ))}
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-gray-500">
+                Category
+              </label>
+              <select
+                className={inputClass}
+                value={newMed.category}
+                onChange={(e) => setNewMed({ ...newMed, category: e.target.value })}
+              >
+                <option value="">Select Category</option>
+                <option value="Pain Relief">Pain Relief</option>
+                <option value="Antibiotic">Antibiotic</option>
+                <option value="Vitamin">Vitamin</option>
+                <option value="Antiseptic">Antiseptic</option>
+                <option value="Supplement">Supplement</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-gray-500">
+                Price (₹)
+              </label>
+              <input
+                type="number"
+                placeholder="120"
+                className={inputClass}
+                value={newMed.price}
+                onChange={(e) => setNewMed({ ...newMed, price: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-gray-500">
+                Quantity
+              </label>
+              <input
+                type="number"
+                placeholder="50"
+                className={inputClass}
+                value={newMed.quantity}
+                onChange={(e) => setNewMed({ ...newMed, quantity: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-gray-500">
+                Expiry Date
+              </label>
+              <input
+                type="date"
+                className={inputClass}
+                value={newMed.expiry}
+                onChange={(e) => setNewMed({ ...newMed, expiry: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-gray-500">
+                Manufacturer
+              </label>
+              <input
+                type="text"
+                placeholder="Pharma Ltd"
+                className={inputClass}
+                value={newMed.manufacturer}
+                onChange={(e) => setNewMed({ ...newMed, manufacturer: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={addMedicine}
+            className="mt-8 bg-black text-white px-8 py-3 hover:bg-gray-800 transition-colors font-medium text-sm uppercase tracking-wider w-full md:w-auto"
+          >
+            + Add to Inventory
+          </button>
+        </div>
+
+        {/* MEDICINE LIST */}
+        <h2 className="text-xl font-bold mb-6 text-black">Current Stock</h2>
+
+        <div className="grid grid-cols-1 gap-4">
+          {filteredMedicines.length === 0 && !loading ? (
+            <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
+              <p className="text-gray-500">No medicines found. Add your first item!</p>
+            </div>
+          ) : (
+            filteredMedicines.map((med) => (
+              <motion.div
+                key={med._id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white p-6 border border-gray-200 hover:border-black transition-colors shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-lg font-bold text-black">{med.name}</h3>
+                    <StatusBadge med={med} />
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 text-sm text-gray-600">
+                    <p>
+                      Category: <span className="text-black">{med.category}</span>
+                    </p>
+                    <p>
+                      Price: <span className="text-black">₹{med.price}</span>
+                    </p>
+                    <p>
+                      Qty: <span className="text-black">{med.quantity}</span>
+                    </p>
+                    <p>
+                      Expires: <span className="text-black">{formatDate(med.expiry)}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 w-full md:w-auto">
+                  <button
+                    onClick={() => setEditingMed(med)}
+                    className="flex-1 md:flex-none px-4 py-2 border border-gray-300 text-black text-sm font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => setConfirmDelete(med._id)}
+                    className="flex-1 md:flex-none px-4 py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* EDIT MODAL */}
       <AnimatePresence>
         {editingMed && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center"
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <div className="bg-white p-6 rounded-lg w-96">
-              <h2 className="text-xl font-bold mb-4">Edit Medicine</h2>
+            <div className="bg-white p-8 w-full max-w-md shadow-2xl border border-gray-200">
+              <h2 className="text-xl font-bold mb-6">Edit Medicine</h2>
 
-              {Object.keys(editingMed).map((field) =>
-                field === "id" ? null : (
-                  <input
-                    key={field}
-                    className="p-2 border rounded-md w-full mb-2"
-                    value={editingMed[field]}
-                    onChange={(e) =>
-                      setEditingMed({ ...editingMed, [field]: e.target.value })
-                    }
-                  />
-                )
-              )}
+              <div className="space-y-4">
+                {Object.keys(editingMed).map((field) =>
+                  field === "_id" || field === "__v" || field === "createdAt" || field === "updatedAt" ? null : (
+                    <div key={field}>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                        {field}
+                      </label>
+                      <input
+                        type={field === "expiry" ? "date" : field === "price" || field === "quantity" ? "number" : "text"}
+                        className={inputClass}
+                        value={field === "expiry" ? formatDate(editingMed[field]) : editingMed[field]}
+                        onChange={(e) =>
+                          setEditingMed({
+                            ...editingMed,
+                            [field]: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  )
+                )}
+              </div>
 
-              <div className="flex justify-end space-x-3 mt-3">
+              <div className="flex justify-end space-x-3 mt-8">
                 <button
                   onClick={() => setEditingMed(null)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md"
+                  className="px-6 py-2 border border-gray-300 text-black hover:bg-gray-50 text-sm font-medium"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={updateMedicine}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                  className="px-6 py-2 bg-black text-white hover:bg-gray-800 text-sm font-medium"
                 >
-                  Save
+                  Save Changes
                 </button>
               </div>
             </div>
@@ -318,27 +439,30 @@ export const InventoryPage = () =>  {
       <AnimatePresence>
         {confirmDelete && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center"
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <div className="bg-white p-6 rounded-lg w-80 text-center">
-              <h3 className="text-xl font-bold mb-4">Delete Item?</h3>
-              <p>Are you sure you want to delete this medicine?</p>
+            <div className="bg-white p-8 w-full max-w-sm text-center shadow-2xl border border-gray-200">
+              <h3 className="text-xl font-bold mb-2">Delete Item?</h3>
+              <p className="text-gray-600 mb-6">
+                This action cannot be undone.
+              </p>
 
-              <div className="flex justify-center space-x-4 mt-4">
+              <div className="flex justify-center space-x-4">
                 <button
                   onClick={() => setConfirmDelete(null)}
-                  className="px-4 py-2 bg-gray-400 text-white rounded-md"
+                  className="px-6 py-2 border border-gray-300 text-black hover:bg-gray-50 text-sm font-medium"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={deleteMedicine}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md"
+                  className="px-6 py-2 bg-black text-white hover:bg-gray-800 text-sm font-medium"
                 >
-                  Confirm
+                  Confirm Delete
                 </button>
               </div>
             </div>
@@ -347,4 +471,4 @@ export const InventoryPage = () =>  {
       </AnimatePresence>
     </div>
   );
-}
+};

@@ -6,7 +6,8 @@ import {AdminProfilePage} from "../pages/UserProfilePage";
 import {DeliveryTrackingPage} from "../pages/DeliveryTrackingPage";
 import Login from "../pages/Auth/login.jsx";
 import Register from "../pages/Auth/register.jsx";
-
+import Dashboard from "../pages/Dashboard.jsx";
+import CustomerRegister from "../pages/Auth/customer_register.jsx";
 
 
 export default function AppRoutes() {
@@ -21,6 +22,8 @@ export default function AppRoutes() {
         <Route path="/track" element={<DeliveryTrackingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/customer/register" element={<CustomerRegister />} />
       </Routes>
     </BrowserRouter>
   );

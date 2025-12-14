@@ -21,16 +21,16 @@ const Checkbox = () => {
       </label>
      <div className={`absolute h-screen right-0 w-48 bg-white rounded-md shadow-lg py-14 z-50 transition-opacity duration-300  flex flex-col  justify-between ${hidden ? 'hidden' : ''}`}>
       <div className="flex flex-col gap-3">
-      <a href="#" className="text-[#3400D1] px-6 hover:bg-gray-200">Home</a>
+      <a href="#" className="text-black px-6 hover:bg-gray-200">Home</a>
       <hr className="bg-indigo-100 text-indigo-100" />
      
-      <a href="#" className="text-[#3400D1] px-6  hover:bg-gray-200">Contact</a>
+      <a href="#" className="text-black px-6  hover:bg-gray-200">Contact</a>
        <hr className="bg-indigo-100 text-indigo-100" />
       </div>
      
       <div className="pt-4 flex flex-col items-center gap-2 w-full ">
         <div className="w-4/5 flex flex-col gap-2">
-          <a className="bg-[#2900A3] text-white w-full py-2 rounded-md hover:bg-[#3F00FF]">Register</a>
+          <a className="bg-black text-white w-full py-2 rounded-md hover:bg-white hover:text-black text-center border-2 border-transparent hover:border-black cursor-pointer">Register</a>
         </div>
         <p className="text-xs text-gray-400">© 2024 PMS. All rights reserved.</p>
       </div>
@@ -61,7 +61,7 @@ const StyledWrapper = styled.div`
 
   .line {
     fill: none;
-    stroke: #A78AFF;
+    stroke: gray;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 3;
@@ -72,7 +72,7 @@ const StyledWrapper = styled.div`
 
   .line-top-bottom {
   color: black;
-  stroke: #3F00FF;
+  stroke: black;
     stroke-dasharray: 12 63;
   }
 

@@ -3,6 +3,8 @@ import Pattern from '../../components/pattern'
 import Lenis from 'lenis'
 import {useEffect, useRef, useState} from 'react'
 import Card from '../../components/card.jsx'
+import { useNavigate } from 'react-router-dom'
+  import { Quote } from "lucide-react";
 
 function App() {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -60,9 +62,11 @@ function App() {
     lenisRef.current?.scrollTo(element, { offset: 0, duration: 1.5 });
   };
 
+  const navigate = useNavigate();
+
   return (
     <main className="w-full min-h-screen bg-black scroll-smooth relative overflow-x-hidden scrollb">
-      
+
     
       <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-[100]">
         <div 
@@ -79,8 +83,8 @@ function App() {
             onClick={() => scrollToSection(id)}
             className={`w-3 h-3 rounded-full transition-all ${
               scrollProgress >= idx * (100 / 7) && scrollProgress < (idx + 1) * (100 / 7) 
-                ? 'bg-indigo-600 scale-125' 
-                : 'bg-gray-400'
+                ? 'bg-white scale-125' 
+                : 'bg-black'
             }`}
             aria-label={`Scroll to ${id.slice(1)}`}
           />
@@ -114,7 +118,7 @@ function App() {
             Keep your pharmacy running smoothly, track inventory like a pro, and focus on what matters most—taking care of your patients.
           </p>
           <div className="flex gap-4 justify-center">
-            <button className="px-8 py-3 bg-white text-black font-bold rounded-lg hover:bg-indigo-50 transition-all cursor-pointer">
+            <button className="px-8 py-3 bg-white text-black font-bold rounded-lg hover:bg-indigo-50 transition-all cursor-pointer" onClick={() => navigate('/register')}>
               Let's Get Started
             </button>
             <button className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white/10 transition-all cursor-pointer">
@@ -150,7 +154,7 @@ function App() {
           >
             Simplify your workflow with easy-to-use tools that save you time and hassle.
           </p>
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { title: "Quick Inventory Check", description: "Monitor stock levels in real-time and get notified when supplies are running low" },
               { title: "Auto Restock", description: "Smart reordering so you never run out of essentials" },
@@ -221,55 +225,140 @@ function App() {
      
      
      
-      <section 
-        id="testimonials"
-        ref={(el) => (sectionsRef.current[4] = el)}
-        className="w-full py-20 bg-black"
-      >
-        <div className="max-w-7xl mx-auto px-6 ">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 text-center pixelify">
-            Loved by Pharmacy Pros
-          </h2>
-          <p className="text-lg text-gray-400 text-center mb-16 max-w-2xl mx-auto">
-            Hear from fellow admins who've transformed their pharmacies and made a real difference for their teams and patients.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { name: "Dr. Sanjay Rajput", role: "Head Pharmacist", location: "MedCare Pharmacy", quote: "This tool saved us 15 hours a week! The auto inventory feature is a game-changer for our hectic schedule." },
-              { name: "Meera Arora", role: "Pharmacy Owner", location: "MedTown Health", quote: "Best investment we've made. The support team is fantastic, and we saw improvements right away." },
-              { name: "Aman Gupta", role: "Inventory Manager", location: "CityMed Pharmacy", quote: "So user-friendly and feature-packed. Our team got up to speed quickly, and the efficiency boost is incredible!" }
-            ].map((testimonial, idx) => (
-              <div 
-                key={idx}
-                className={`bg-indigo-50 p-6 rounded-xl transition-all duration-700 hover:shadow-lg ${
-                  isVisible['testimonials'] ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
-                }`}
-                style={{ transitionDelay: `${idx * 150}ms` }}
-              >
-                <p className="text-gray-700 mb-4 italic text-lg">"{testimonial.quote}"</p>
-                <div className="border-t border-indigo-200 pt-4">
-                  <p className="font-bold text-gray-800">{testimonial.name}</p>
-                  <p className="text-sm text-gray-600">{testimonial.role}</p>
-                  <p className="text-xs text-gray-500 mt-1">{testimonial.location}</p>
+     
+
+<section
+  id="testimonials"
+  ref={(el) => (sectionsRef.current[4] = el)}
+  className="w-full py-24 bg-black relative overflow-hidden"
+>
+  {/* Optional: Subtle background pattern for texture */}
+  <div className="absolute inset-0 opacity-20" 
+       style={{ backgroundImage: 'radial-gradient(#333 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+  </div>
+
+  <div className="max-w-7xl mx-auto px-6 relative z-10">
+    <div className="text-center mb-20">
+      <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 pixelify tracking-tight">
+        Loved by Pharmacy Pros
+      </h2>
+      <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto font-light leading-relaxed">
+        Hear from fellow admins who've transformed their pharmacies and made a real difference for their teams and patients.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      {[
+        { 
+          name: "Dr. Sanjay Rajput", 
+          role: "Head Pharmacist", 
+          location: "MedCare Pharmacy", 
+          quote: "This tool saved us 15 hours a week! The auto inventory feature is a game-changer for our hectic schedule." 
+        },
+        { 
+          name: "Meera Arora", 
+          role: "Pharmacy Owner", 
+          location: "MedTown Health", 
+          quote: "Best investment we've made. The support team is fantastic, and we saw improvements right away." 
+        },
+        { 
+          name: "Aman Gupta", 
+          role: "Inventory Manager", 
+          location: "CityMed Pharmacy", 
+          quote: "So user-friendly and feature-packed. Our team got up to speed quickly, and the efficiency boost is incredible!" 
+        }
+      ].map((testimonial, idx) => (
+        <div
+          key={idx}
+          className={`
+            group relative p-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm
+            transition-all duration-500 hover:border-zinc-600 hover:bg-zinc-900
+            ${isVisible['testimonials'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
+          `}
+          style={{ transitionDelay: `${idx * 150}ms` }}
+        >
+          {/* Large Background Quote Icon for Decoration */}
+          <div className="absolute top-6 right-6 opacity-10 transition-opacity group-hover:opacity-20">
+            <Quote size={48} className="text-white fill-white" />
+          </div>
+
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <p className="text-zinc-300 text-lg leading-relaxed mb-8 font-light">
+              "{testimonial.quote}"
+            </p>
+
+            <div className="flex items-center gap-4 pt-6 border-t border-zinc-800 group-hover:border-zinc-700 transition-colors">
+              {/* Optional: Initials Avatar if no images are used */}
+              <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-sm shrink-0">
+                {testimonial.name.charAt(0)}
+              </div>
+              
+              <div>
+                <p className="font-semibold text-white text-base">
+                  {testimonial.name}
+                </p>
+                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                  <span>{testimonial.role}</span>
+                  <span className="hidden md:inline">•</span>
+                  <span>{testimonial.location}</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+  </div>
+</section>
 
       
       <footer 
         id="footer"
         ref={(el) => (sectionsRef.current[5] = el)}
-        className="w-full bg-gray-900 text-white py-12"
+        className="w-full bg-black text-white pt-20 pb-10 border-t border-white/20"
       >
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-lg mb-4">Ready to simplify your pharmacy management?</p>
-          <button className="px-8 py-3 cursor-pointer bg-indigo-600 rounded-lg font-bold hover:bg-indigo-700 transition-all mb-8">
-            Start Now
-          </button>
-          <p className="text-gray-400 text-sm">© 2024 Pharmacy Store. All rights reserved.</p>
+        <div className="max-w-7xl mx-auto px-6">
+          
+          {/* CTA Section */}
+          
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-2">
+              <h3 className="text-2xl font-bold pixelify mb-4">Pharmacy Store</h3>
+              <p className="text-gray-400 max-w-sm mb-6 text-sm leading-relaxed">
+                Streamlining pharmacy operations with cutting-edge inventory tracking and patient management tools. Built for efficiency, designed for care.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-bold mb-6 text-lg">Platform</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Inventory Management</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Order Tracking</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Patient Records</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Analytics</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold mb-6 text-lg">Support</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">© 2024 Pharmacy Store. All rights reserved.</p>
+            <div className="flex gap-6 text-sm text-gray-500">
+              <a href="#" className="hover:text-white transition-colors">Privacy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms</a>
+              <a href="#" className="hover:text-white transition-colors">Cookies</a>
+            </div>
+          </div>
         </div>
       </footer>
     </main>

@@ -159,7 +159,7 @@ const Register = () => {
                             Already have an account? Login
                         </Link>
 
-                        <Link to='/customer/login' className="w-full text-center text-sm text-white p-3 bg-gray-800 rounded-lg hover:bg-black transition md:translate-y-8">
+                        <Link to='/customer/register' className="w-full text-center text-sm text-white p-3 bg-gray-800 rounded-lg hover:bg-black transition md:translate-y-8">
                             Customer Register
                         </Link>
                     </motion.section>

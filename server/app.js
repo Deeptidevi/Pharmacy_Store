@@ -8,13 +8,32 @@ const Medicine = require('./model/Medicine.js');
 const Order = require('./model/Order.js');
 const mongoose = require('mongoose');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 const app = express();
 const cors = require('cors');
 
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname)
+    }
+});
+const upload = multer({ storage: storage });
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_in_production';
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 app.use(cors(
     {
@@ -35,28 +54,59 @@ await mongoose.connect(process.env.MONGODB_URI).then(() => {
 
 };
 
-function isLoggedIn(req,res, next){
-}
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) return res.status(403).json({ message: "No token provided" });
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(401).json({ message: "Unauthorized" });
+        req.userId = decoded.id;
+        req.userRole = decoded.role;
+        next();
+    });
+};
+
+const isSuperAdmin = async (req, res, next) => {
+    try {
+        const admin = await Admin.findById(req.userId);
+        if (admin && admin.role === 'Super Admin') {
+            next();
+        } else {
+            res.status(403).json({ message: "Require Super Admin Role" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Server Error" });
+    }
+};
 
 app.post('/admin_register', async (req, res) => {
-    const { email, password } = req.body;
-    try{
-        let isAdminExist = await Admin.findOne({email});
-        if(isAdminExist){
+    const { email, password, name, phone } = req.body;
+    try {
+        const adminCount = await Admin.countDocuments();
+        let role = 'Admin';
+
+        // First admin is always Super Admin
+        if (adminCount === 0) {
+            role = 'Super Admin';
+        }
+
+        let isAdminExist = await Admin.findOne({ email });
+        if (isAdminExist) {
             return res.status(400).json({ message: "Account already exists" });
-        }else{
-        
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const newAdmin = await Admin.create({
+            name: name || 'Admin',
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            phone: phone || '',
+            role
         });
 
-       
-        res.status(201).json({ message: "Admin Registered Successfully" });
-    }
-    }catch(err){
-        res.status(500).json({ message: "Server Error" });
+        res.status(201).json({ message: "Admin Registered Successfully", admin: newAdmin });
+    } catch (err) {
+        res.status(500).json({ message: "Server Error", error: err.message });
     }
 });
 
@@ -67,11 +117,20 @@ app.post('/admin_login', async (req, res) => {
 
         if(admin && (await bcrypt.compare(password, admin.password))){
             const token = jwt.sign(
-                { id: admin._id, email: admin.email, role: 'admin' },
+                { id: admin._id, email: admin.email, role: admin.role },
                 JWT_SECRET,
                 { expiresIn: '1d' }
             );
-            res.status(200).json({ message: "Login Successful", token });
+            res.status(200).json({ 
+                message: "Login Successful", 
+                token,
+                user: {
+                    id: admin._id,
+                    name: admin.name,
+                    email: admin.email,
+                    role: admin.role
+                }
+            });
         }
         else{
             res.status(401).json({ message: "Invalid Credentials" });
@@ -356,11 +415,39 @@ app.put('/api/orders/:id', async (req, res) => {
 
 // ADMIN PROFILE ROUTES
 
-// GET admin profile (assuming single admin or first found for now)
-app.get('/api/admin/profile', async (req, res) => {
+// GET all admins (Super Admin only)
+app.get('/api/admins', verifyToken, isSuperAdmin, async (req, res) => {
     try {
-        // In a real app, get ID from auth token. Here we just get the first admin.
-        const admin = await Admin.findOne();
+        const admins = await Admin.find({}, '-password'); // Exclude password
+        res.json(admins);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching admins", error: err.message });
+    }
+});
+
+// DELETE admin (Super Admin only)
+app.delete('/api/admins/:id', verifyToken, isSuperAdmin, async (req, res) => {
+    try {
+        const adminToDelete = await Admin.findById(req.params.id);
+        if (!adminToDelete) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+        
+        if (adminToDelete.role === 'Super Admin') {
+            return res.status(400).json({ message: "Cannot delete Super Admin" });
+        }
+
+        await Admin.findByIdAndDelete(req.params.id);
+        res.json({ message: "Admin deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting admin", error: err.message });
+    }
+});
+
+// GET admin profile (assuming single admin or first found for now)
+app.get('/api/admin/profile', verifyToken, async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.userId).select('-password');
         if (!admin) {
             return res.status(404).json({ message: "Admin profile not found" });
         }
@@ -371,12 +458,11 @@ app.get('/api/admin/profile', async (req, res) => {
 });
 
 // PUT - Update admin profile
-app.put('/api/admin/profile', async (req, res) => {
+app.put('/api/admin/profile', verifyToken, async (req, res) => {
     try {
         const { name, email, phone, currentPassword, newPassword } = req.body;
         
-        // Find the admin (assuming single admin)
-        const admin = await Admin.findOne();
+        const admin = await Admin.findById(req.userId);
         if (!admin) {
             return res.status(404).json({ message: "Admin not found" });
         }
@@ -403,6 +489,139 @@ app.put('/api/admin/profile', async (req, res) => {
     }
 });
 
+// --- CUSTOMER ROUTES ---
+
+// GET all medicines with search and filter
+app.get('/api/medicines', async (req, res) => {
+    try {
+        const { search, category } = req.query;
+        let query = {};
+
+        if (search) {
+            query.name = { $regex: search, $options: 'i' };
+        }
+        if (category && category !== 'All') {
+            query.category = category;
+        }
+
+        const medicines = await Medicine.find(query);
+        res.json(medicines);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching medicines", error: err.message });
+    }
+});
+
+// GET single medicine details
+app.get('/api/medicines/:id', async (req, res) => {
+    try {
+        const medicine = await Medicine.findById(req.params.id);
+        if (!medicine) {
+            return res.status(404).json({ message: "Medicine not found" });
+        }
+        res.json(medicine);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching medicine details", error: err.message });
+    }
+});
+
+// POST create order (with optional prescription upload)
+app.post('/api/orders', upload.single('prescription'), async (req, res) => {
+    try {
+        const { customer, items, total, address, paymentMethod } = req.body;
+        let parsedItems = items;
+        if (typeof items === 'string') {
+            parsedItems = JSON.parse(items);
+        }
+
+        const orderData = {
+            customer,
+            items: parsedItems,
+            total,
+            address,
+            paymentMethod,
+            status: "Pending"
+        };
+
+        if (req.file) {
+            orderData.prescriptionImage = req.file.path;
+        }
+
+        const newOrder = await Order.create(orderData);
+        res.status(201).json({ message: "Order placed successfully", order: newOrder });
+    } catch (err) {
+        console.error("Error placing order:", err);
+        res.status(500).json({ message: "Error placing order", error: err.message });
+    }
+});
+
+// GET customer orders (by email)
+app.get('/api/my-orders', async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        const orders = await Order.find({ customer: email }).sort({ date: -1 });
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching orders", error: err.message });
+    }
+});
+
+
+// GET analytics data
+app.get('/api/analytics', verifyToken, async (req, res) => {
+    try {
+        // 1. Sales Data (Last 7 days) - Mocked for now as we don't have historical order data structure fully populated
+        // In a real app, you'd aggregate Order.find({ date: { $gte: sevenDaysAgo } })
+        const salesData = [
+            { name: 'Mon', sales: 4000 },
+            { name: 'Tue', sales: 3000 },
+            { name: 'Wed', sales: 2000 },
+            { name: 'Thu', sales: 2780 },
+            { name: 'Fri', sales: 1890 },
+            { name: 'Sat', sales: 2390 },
+            { name: 'Sun', sales: 3490 },
+        ];
+
+        // 2. Inventory Status
+        const totalMedicines = await Medicine.countDocuments();
+        const lowStock = await Medicine.countDocuments({ quantity: { $lt: 10 } });
+        const outOfStock = await Medicine.countDocuments({ quantity: 0 });
+        const inStock = totalMedicines - lowStock - outOfStock;
+
+        const inventoryData = [
+            { name: 'In Stock', value: inStock },
+            { name: 'Low Stock', value: lowStock },
+            { name: 'Out of Stock', value: outOfStock },
+        ];
+
+        // 3. Order Status Distribution
+        const pendingOrders = await Order.countDocuments({ status: 'Pending' });
+        const processingOrders = await Order.countDocuments({ status: 'Processing' });
+        const deliveredOrders = await Order.countDocuments({ status: 'Delivered' });
+        const cancelledOrders = await Order.countDocuments({ status: 'Cancelled' });
+
+        const orderStatusData = [
+            { name: 'Pending', value: pendingOrders },
+            { name: 'Processing', value: processingOrders },
+            { name: 'Delivered', value: deliveredOrders },
+            { name: 'Cancelled', value: cancelledOrders },
+        ];
+
+        // 4. Recent Orders (Top 5)
+        const recentOrders = await Order.find().sort({ date: -1 }).limit(5);
+
+        res.json({
+            salesData,
+            inventoryData,
+            orderStatusData,
+            recentOrders
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching analytics", error: err.message });
+    }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

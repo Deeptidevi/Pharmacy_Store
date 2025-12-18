@@ -245,7 +245,7 @@ const CustomerRegister = () => {
                     >
                         <p className="text-sm text-gray-600">
                             Already have an account?{' '}
-                            <Link to="/customer/login" className="text-white font-bold  transition-colors">
+                            <Link to="/customer/login" className="text-gray-700 font-bold  transition-colors">
                                 Sign In
                             </Link>
                         </p>

@@ -30,6 +30,14 @@ const medicineSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
+    },
+    description: {
+        type: String,
+        default: ""
+    },
+    prescriptionRequired: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, Shield, Lock, Save, History, CreditCard } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { User, Mail, Phone, Shield, Lock, Save, History, CreditCard, LogOut } from 'lucide-react';
 
 const API_URL = "http://localhost:5000/api";
 
 export const AdminProfilePage = () => {
+  const navigate = useNavigate();
   const [admin, setAdmin] = useState({
     name: "",
     email: "",
     phone: "",
-    role: "Super Admin",
+    role: "",
   });
 
   const [passwords, setPasswords] = useState({
@@ -19,26 +21,103 @@ export const AdminProfilePage = () => {
   });
 
   const [orders, setOrders] = useState([]);
+  const [adminsList, setAdminsList] = useState([]);
+  const [newAdmin, setNewAdmin] = useState({ email: '', password: '', name: '', phone: '' });
 
   useEffect(() => {
     fetchProfile();
     fetchRecentOrders();
   }, []);
 
+  useEffect(() => {
+    if (admin.role === 'Super Admin') {
+      fetchAdmins();
+    }
+  }, [admin.role]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
+  };
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': token
+    };
+  };
+
   const fetchProfile = async () => {
     try {
-      const response = await fetch(`${API_URL}/admin/profile`);
+      const response = await fetch(`${API_URL}/admin/profile`, {
+        headers: getAuthHeaders()
+      });
       if (response.ok) {
         const data = await response.json();
         setAdmin({
           name: data.name || "Admin",
           email: data.email || "",
           phone: data.phone || "",
-          role: data.role || "Super Admin"
+          role: data.role || "Admin"
         });
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
+    }
+  };
+
+  const fetchAdmins = async () => {
+    try {
+      const response = await fetch(`${API_URL}/admins`, {
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAdminsList(data);
+      }
+    } catch (error) {
+      console.error("Error fetching admins:", error);
+    }
+  };
+
+  const handleAddAdmin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`http://localhost:5000/admin_register`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(newAdmin)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert('Admin added successfully');
+        setNewAdmin({ email: '', password: '', name: '', phone: '' });
+        fetchAdmins();
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error adding admin:", error);
+    }
+  };
+
+  const handleDeleteAdmin = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this admin?")) return;
+    try {
+      const response = await fetch(`${API_URL}/admins/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        fetchAdmins();
+      } else {
+        const data = await response.json();
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting admin:", error);
     }
   };
 
@@ -74,7 +153,7 @@ export const AdminProfilePage = () => {
     try {
       const response = await fetch(`${API_URL}/admin/profile`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify(admin),
       });
       
@@ -98,7 +177,7 @@ export const AdminProfilePage = () => {
     try {
       const response = await fetch(`${API_URL}/admin/profile`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           currentPassword: passwords.current,
           newPassword: passwords.new
@@ -125,13 +204,22 @@ export const AdminProfilePage = () => {
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6 md:p-12 font-sans">
       <div className="max-w-5xl mx-auto">
         
-        <header className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
-            Profile & Settings
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Manage your account details and security.
-          </p>
+        <header className="mb-10 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
+              Profile & Settings
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Manage your account details and security.
+            </p>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -274,6 +362,85 @@ export const AdminProfilePage = () => {
                 </button>
               </div>
             </motion.div>
+
+            {/* ADMIN MANAGEMENT (SUPER ADMIN ONLY) */}
+            {admin.role === 'Super Admin' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm"
+              >
+                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                  <div className="p-2 bg-purple-100 text-purple-900 rounded-lg">
+                    <Shield size={20} />
+                  </div>
+                  <h2 className="text-xl font-bold">Manage Admins</h2>
+                </div>
+
+                <div className="mb-8">
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-4">Add New Admin</h3>
+                  <form onSubmit={handleAddAdmin} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      className={inputClass}
+                      value={newAdmin.name}
+                      onChange={(e) => setNewAdmin({...newAdmin, name: e.target.value})}
+                      required
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      className={inputClass}
+                      value={newAdmin.email}
+                      onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
+                      required
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      className={inputClass}
+                      value={newAdmin.password}
+                      onChange={(e) => setNewAdmin({...newAdmin, password: e.target.value})}
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Phone"
+                      className={inputClass}
+                      value={newAdmin.phone}
+                      onChange={(e) => setNewAdmin({...newAdmin, phone: e.target.value})}
+                    />
+                    <button type="submit" className="md:col-span-2 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                      Add Admin
+                    </button>
+                  </form>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-4">Existing Admins</h3>
+                  <div className="space-y-3">
+                    {adminsList.map((adm) => (
+                      <div key={adm._id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div>
+                          <p className="font-medium text-gray-900">{adm.name} {adm.role === 'Super Admin' && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full ml-2">Super Admin</span>}</p>
+                          <p className="text-sm text-gray-500">{adm.email}</p>
+                        </div>
+                        {adm.role !== 'Super Admin' && (
+                          <button 
+                            onClick={() => handleDeleteAdmin(adm._id)}
+                            className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          >
+                            <LogOut size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Right Column: Recent Activity / Orders */}

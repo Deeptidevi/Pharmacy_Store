@@ -121,9 +121,7 @@ function App() {
             <button className="px-8 py-3 bg-white text-black font-bold rounded-lg hover:bg-indigo-50 transition-all cursor-pointer" onClick={() => navigate('/register')}>
               Let's Get Started
             </button>
-            <button className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white/10 transition-all cursor-pointer">
-              Check Out the Demo
-            </button>
+           
           </div>
         </div>
         <div className="absolute bottom-10 z-20 animate-bounce">

@@ -26,7 +26,7 @@ const CustomerLogin = () => {
                         // Store user info if needed, e.g., localStorage
                         localStorage.setItem('customerToken', data.token);
                         localStorage.setItem('customer', JSON.stringify(data.customer));
-                        navigate('/'); // Redirect to home/shop
+                        navigate('/customer/dashboard'); // Redirect to home/shop
                     } else {
                         setError(data.message || 'Login failed');
                     }

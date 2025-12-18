@@ -10,7 +10,9 @@ import {
   AlertCircle, 
   PackageCheck, 
   Bell,
-  Search
+  Search,
+  BarChart2,
+  Shield
 } from 'lucide-react';
 
 const API_URL = "http://localhost:5000/api";
@@ -25,11 +27,30 @@ const Dashboard = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
     fetchDashboardStats();
     fetchActivities();
+    checkUserRole();
   }, []);
+
+  const checkUserRole = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await fetch(`${API_URL}/admin/profile`, {
+          headers: { 'Authorization': token }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUserRole(data.role);
+        }
+      } catch (error) {
+        console.error("Error checking role:", error);
+      }
+    }
+  };
 
   const fetchDashboardStats = async () => {
     try {
@@ -37,10 +58,10 @@ const Dashboard = () => {
       const data = await response.json();
       
       setStats([
-        { title: 'Total Stock', value: data.totalStock.toString(), icon: <Box size={20} />, change: '0%', note: 'items in inventory' },
-        { title: 'Low Stock Alert', value: data.lowStockCount.toString(), icon: <AlertCircle size={20} />, change: '0%', note: 'items below 10' },
-        { title: 'Expired Items', value: data.expiredCount.toString(), icon: <ClipboardList size={20} />, change: '0%', note: 'need attention' },
-        { title: 'Total Value', value: `₹${data.totalValue}`, icon: <TrendingUp size={20} />, change: '0%', note: 'inventory worth' },
+        { title: 'Total Stock', value: data.totalStock.toString(), icon: <Box size={20} />,  note: 'items in inventory' },
+        { title: 'Low Stock Alert', value: data.lowStockCount.toString(), icon: <AlertCircle size={20} />, note: 'items below 10' },
+        { title: 'Expired Items', value: data.expiredCount.toString(), icon: <ClipboardList size={20} />, note: 'need attention' },
+        { title: 'Total Value', value: `₹${data.totalValue}`, icon: <TrendingUp size={20} />, note: 'inventory worth' },
       ]);
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
@@ -90,16 +111,7 @@ const Dashboard = () => {
         
         {/* Search Bar & Profile */}
         <div className="flex items-center gap-4">
-          <div className="relative group">
-             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-               <Search size={16} className="text-gray-400 group-focus-within:text-black transition-colors" />
-             </div>
-             <input 
-               type="text" 
-               placeholder="Search inventory..." 
-               className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm w-full md:w-64 lg:w-96 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all shadow-sm"
-             />
-          </div>
+          
 
           <Link to="/admin/profile" className="w-11 h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-black hover:border-black transition-all shadow-sm" title="Admin Profile">
             <User size={20} />
@@ -123,9 +135,7 @@ const Dashboard = () => {
               <div className="p-3 bg-black text-white rounded-lg shadow-md group-hover:scale-110 transition-transform duration-300">
                 {stat.icon}
               </div>
-              <span className="flex items-center gap-1 text-xs font-bold bg-gray-100 px-2 py-1 rounded-full text-gray-700">
-                {stat.change}
-              </span>
+             
             </div>
             <div>
               <h3 className="text-3xl font-bold text-gray-900 font-mono tracking-tighter mb-1">
@@ -174,7 +184,8 @@ const Dashboard = () => {
               <ArrowRight size={16} className="ml-auto text-gray-300 group-hover:text-black transition-colors" />
             </Link>
 
-            <Link to="/users" className="group p-5 bg-white border border-gray-200 rounded-xl hover:border-black transition-all duration-300 flex items-center gap-5 shadow-sm hover:shadow-md">
+            {userRole === 'Super Admin' && (
+            <Link to="/admin/staff" className="group p-5 bg-white border border-gray-200 rounded-xl hover:border-black transition-all duration-300 flex items-center gap-5 shadow-sm hover:shadow-md">
               <div className="h-12 w-12 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
                 <Users size={22} />
               </div>
@@ -184,8 +195,9 @@ const Dashboard = () => {
               </div>
               <ArrowRight size={16} className="ml-auto text-gray-300 group-hover:text-black transition-colors" />
             </Link>
+            )}
 
-            <Link to="/reports" className="group p-5 bg-white border border-gray-200 rounded-xl hover:border-black transition-all duration-300 flex items-center gap-5 shadow-sm hover:shadow-md">
+            <Link to="/admin/analytics" className="group p-5 bg-white border border-gray-200 rounded-xl hover:border-black transition-all duration-300 flex items-center gap-5 shadow-sm hover:shadow-md">
               <div className="h-12 w-12 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
                 <TrendingUp size={22} />
               </div>

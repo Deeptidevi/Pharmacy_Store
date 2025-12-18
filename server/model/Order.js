@@ -30,6 +30,19 @@ const orderSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    paymentMethod: {
+        type: String,
+        enum: ["Credit Card", "Cash on Delivery"],
+        required: true
+    },
+    prescriptionImage: {
+        type: String, // Path to the uploaded image
+        default: null
     }
 }, {
     timestamps: true

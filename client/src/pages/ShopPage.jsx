@@ -9,7 +9,7 @@ const ShopPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('All');
 
-  const categories = ['All', 'Tablets', 'Syrups', 'First Aid', 'Injections', 'Supplements'];
+  const categories = ['All', 'Pain Relief', 'Antibiotic', 'Vitamin', 'Antiseptic', 'Supplement'];
 
   useEffect(() => {
     fetchMedicines();

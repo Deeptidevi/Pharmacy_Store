@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/immutability */
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Phone, Shield, Lock, Save, History, CreditCard, LogOut } from 'lucide-react';
+import { User, Mail, Phone, Shield, Lock, Save, History, CreditCard, LogOut, ArrowLeft } from 'lucide-react';
 
 const API_URL = "http://localhost:5000/api";
 
@@ -206,6 +207,13 @@ export const AdminProfilePage = () => {
         
         <header className="mb-10 flex justify-between items-start">
           <div>
+            <button 
+              onClick={() => navigate('/dashboard')} 
+              className="flex items-center gap-2 text-gray-500 hover:text-black mb-4 transition-colors"
+            >
+              <ArrowLeft size={20} />
+              <span className="font-medium">Back</span>
+            </button>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
               Profile & Settings
             </h1>

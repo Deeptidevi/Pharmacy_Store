@@ -194,7 +194,17 @@ app.post('/customer_login', async (req, res) => {
 // GET all medicines
 app.get('/api/medicines', async (req, res) => {
     try {
-        const medicines = await Medicine.find().sort({ createdAt: -1 });
+        const { search, category } = req.query;
+        let query = {};
+
+        if (search) {
+            query.name = { $regex: search, $options: 'i' };
+        }
+        if (category && category !== 'All') {
+            query.category = category;
+        }
+
+        const medicines = await Medicine.find(query).sort({ createdAt: -1 });
         res.status(200).json(medicines);
     } catch (err) {
         res.status(500).json({ message: "Error fetching medicines", error: err.message });
@@ -491,25 +501,7 @@ app.put('/api/admin/profile', verifyToken, async (req, res) => {
 
 // --- CUSTOMER ROUTES ---
 
-// GET all medicines with search and filter
-app.get('/api/medicines', async (req, res) => {
-    try {
-        const { search, category } = req.query;
-        let query = {};
 
-        if (search) {
-            query.name = { $regex: search, $options: 'i' };
-        }
-        if (category && category !== 'All') {
-            query.category = category;
-        }
-
-        const medicines = await Medicine.find(query);
-        res.json(medicines);
-    } catch (err) {
-        res.status(500).json({ message: "Error fetching medicines", error: err.message });
-    }
-});
 
 // GET single medicine details
 app.get('/api/medicines/:id', async (req, res) => {

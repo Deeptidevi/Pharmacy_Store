@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
-const API_URL = "http://localhost:5000/api/medicines";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/medicines`;
 
 export const InventoryPage = () => {
+  const navigate = useNavigate();
   const [medicines, setMedicines] = useState([]);
 
   const [newMed, setNewMed] = useState({
@@ -13,6 +16,7 @@ export const InventoryPage = () => {
     quantity: "",
     expiry: "",
     manufacturer: "",
+    image: null
   });
 
   const [search, setSearch] = useState("");
@@ -49,12 +53,20 @@ export const InventoryPage = () => {
     }
 
     try {
+      const formData = new FormData();
+      formData.append('name', newMed.name);
+      formData.append('category', newMed.category);
+      formData.append('price', newMed.price);
+      formData.append('quantity', newMed.quantity);
+      formData.append('expiry', newMed.expiry);
+      formData.append('manufacturer', newMed.manufacturer);
+      if (newMed.image) {
+        formData.append('image', newMed.image);
+      }
+
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMed),
+        body: formData,
       });
 
       const data = await response.json();
@@ -68,6 +80,7 @@ export const InventoryPage = () => {
           quantity: "",
           expiry: "",
           manufacturer: "",
+          image: null
         });
         fetchMedicines(); // Refresh the list
       } else {
@@ -82,12 +95,20 @@ export const InventoryPage = () => {
   // UPDATE MEDICINE
   const updateMedicine = async () => {
     try {
+      const formData = new FormData();
+      formData.append('name', editingMed.name);
+      formData.append('category', editingMed.category);
+      formData.append('price', editingMed.price);
+      formData.append('quantity', editingMed.quantity);
+      formData.append('expiry', editingMed.expiry);
+      formData.append('manufacturer', editingMed.manufacturer);
+      if (editingMed.imageFile) {
+        formData.append('image', editingMed.imageFile);
+      }
+
       const response = await fetch(`${API_URL}/${editingMed._id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editingMed),
+        body: formData,
       });
 
       const data = await response.json();
@@ -178,6 +199,13 @@ export const InventoryPage = () => {
   return (
     <div className="p-8 bg-gray-50 min-h-screen font-sans text-gray-900">
       <div className="max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="mb-6 flex items-center text-gray-600 hover:text-black transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Back to Dashboard
+        </button>
         <h1 className="text-4xl font-extrabold mb-8 tracking-tight text-black text-center">
           Inventory
         </h1>
@@ -310,6 +338,41 @@ export const InventoryPage = () => {
                 value={newMed.manufacturer}
                 onChange={(e) => setNewMed({ ...newMed, manufacturer: e.target.value })}
               />
+            </div>
+
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="block text-xs font-bold uppercase tracking-wide mb-2 text-gray-500">
+                Medicine Image
+              </label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-black transition-colors cursor-pointer relative bg-gray-50">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={(e) => setNewMed({ ...newMed, image: e.target.files[0] })}
+                />
+                {newMed.image ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-green-600">Image Selected: {newMed.image.name}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setNewMed({...newMed, image: null});
+                      }}
+                      className="text-red-500 hover:text-red-700 text-xs underline z-10"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm text-gray-500">Drag & drop an image here, or click to select</p>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

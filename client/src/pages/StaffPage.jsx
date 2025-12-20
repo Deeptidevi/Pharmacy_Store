@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, UserPlus, Trash2, Shield, Phone, Mail, ArrowLeft } from 'lucide-react';
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 const StaffPage = () => {
   const navigate = useNavigate();
@@ -61,7 +61,7 @@ const StaffPage = () => {
   const handleAddAdmin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/admin_register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin_register`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(newAdmin)

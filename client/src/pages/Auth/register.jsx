@@ -19,7 +19,7 @@ const Register = () => {
             setError('Passwords do not match');
         } else if (email && password) {
             try {
-                const response = await fetch('http://localhost:5000/admin_register', {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/admin_register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password }),

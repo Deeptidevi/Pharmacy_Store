@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Truck, CheckCircle, Clock, Package, User, ChevronRight, Lock } from 'lucide-react';
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 export const DeliveryTrackingPage = () => {
   const steps = [
@@ -28,7 +28,7 @@ export const DeliveryTrackingPage = () => {
     setError("");
 
     try {
-      const response = await fetch('http://localhost:5000/customer_login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/customer_login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -53,11 +53,9 @@ export const DeliveryTrackingPage = () => {
     try {
       // Fetch all orders and filter by customer email on client side (or update API to filter)
       // For this implementation, we'll fetch all and filter
-      const response = await fetch(`${API_URL}/orders`);
+      const response = await fetch(`${API_URL}/my-orders?email=${customerEmail}`);
       if (response.ok) {
-        const data = await response.json();
-        // Filter orders for this customer
-        const customerOrders = data.filter(o => o.customer === customerEmail);
+        const customerOrders = await response.json();
         
         if (customerOrders.length > 0) {
           // Sort by date descending

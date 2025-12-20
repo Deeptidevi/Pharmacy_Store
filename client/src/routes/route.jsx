@@ -17,6 +17,7 @@ import CustomerDashboard from "../pages/CustomerDashboard.jsx";
 import AnalyticsPage from "../pages/AnalyticsPage.jsx";
 import StaffPage from "../pages/StaffPage.jsx";
 import ContactPage from "../pages/ContactPage.jsx";
+import { CustomerProfilePage } from "../pages/CustomerProfilePage.jsx";
 
 
 export default function AppRoutes() {
@@ -29,6 +30,7 @@ export default function AppRoutes() {
         <Route path="/my-cart" element={<CustomerCartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+        <Route path="/customer/profile" element={<CustomerProfilePage />} />
         <Route path="/admin/analytics" element={<AnalyticsPage />} />
         <Route path="/admin/staff" element={<StaffPage />} />
         <Route path="/cart" element={ <AdminOrdersPage />} />

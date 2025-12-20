@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Phone, Shield, Lock, Save, History, CreditCard, LogOut, ArrowLeft } from 'lucide-react';
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 export const AdminProfilePage = () => {
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ export const AdminProfilePage = () => {
   const handleAddAdmin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/admin_register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/admin_register`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(newAdmin)

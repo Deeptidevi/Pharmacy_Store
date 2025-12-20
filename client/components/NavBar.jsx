@@ -50,7 +50,7 @@ const NavBar = () => {
   if(isMobile) {
     return(
       <div className="w-full h-12 rounded-b-lg bg-white fixed top-0 left-0 z-50 flex items-center justify-between px-7">
-      <a href="/" className="pixelify text-xl  text-gray-800 font-bold ">PharmFlow</a>
+      <button onClick={() => navigate('/')} className="pixelify text-xl  text-gray-800 font-bold ">PharmFlow</button>
       <div className="flex flex-row justify-between items-center py-4 space-x-8">
        <Menu />
       </div>
@@ -59,30 +59,30 @@ const NavBar = () => {
   }
   return (
     <div className="w-4/5 h-12 rounded-full bg-white fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-around md:justify-between px-4 md:px-5">
-      <a href="/" className="pixelify text-xl  text-gray-800 ">PharmFlow</a>
+      <button onClick={() => navigate('/')} className="pixelify text-xl  text-gray-800 ">PharmFlow</button>
       <div className="flex flex-row justify-between items-center py-4 space-x-8">
         {isMainPage ? (
           <>
-            <a href="/" className="text-gray-800 cursor-pointer">Home</a>
-            <a href="/contact" className="text-gray-800 cursor-pointer">Contact</a>
+            <button onClick={() => navigate('/')} className="text-gray-800 cursor-pointer">Home</button>
+            <button onClick={() => navigate('/contact')} className="text-gray-800 cursor-pointer">Contact</button>
           </>
         ) : (
           <>
-            <a href="/" className="text-gray-800 cursor-pointer">Home</a>
-            <a href="/shop" className="text-gray-800 cursor-pointer">Shop</a>
-            <a href="/my-cart" className="text-gray-800 cursor-pointer">Cart</a>
-            <a href="/customer/dashboard" className="text-gray-800 cursor-pointer">Dashboard</a>
+            <button onClick={() => navigate('/')} className="text-gray-800 cursor-pointer">Home</button>
+            <button onClick={() => navigate('/shop')} className="text-gray-800 cursor-pointer">Shop</button>
+            <button onClick={() => navigate('/my-cart')} className="text-gray-800 cursor-pointer">Cart</button>
+            <button onClick={() => navigate('/customer/dashboard')} className="text-gray-800 cursor-pointer">Dashboard</button>
           </>
         )}
         
         {userType ? (
           isMainPage ? (
-            <a href={userType === 'admin' ? "/dashboard" : "/customer/dashboard"} className="bg-gray-800 cursor-pointer text-white px-4 py-[5.5px] rounded-full hover:bg-gray-700 transition-colors">Dashboard</a>
+            <button onClick={() => navigate(userType === 'admin' ? "/dashboard" : "/customer/dashboard")} className="bg-gray-800 cursor-pointer text-white px-4 py-[5.5px] rounded-full hover:bg-gray-700 transition-colors">Dashboard</button>
           ) : (
             <button onClick={handleLogout} className="bg-red-600 cursor-pointer text-white px-4 py-[5.5px] rounded-full hover:bg-red-700 transition-colors">Logout</button>
           )
         ) : (
-          <a href="/register" className="bg-gray-800 cursor-pointer text-white px-4 py-[5.5px] rounded-full ">Register</a>
+          <button onClick={() => navigate('/register')} className="bg-gray-800 cursor-pointer text-white px-4 py-[5.5px] rounded-full ">Register</button>
         )}
       </div>
     </div>

@@ -6,8 +6,13 @@ const CustomerDashboard = () => {
   
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [customerName, setCustomerName] = useState("");
 
   useEffect(() => {
+    const customer = JSON.parse(localStorage.getItem('customer'));
+    if (customer && customer.name) {
+      setCustomerName(customer.name);
+    }
     fetchOrders();
   }, []);
 
@@ -18,7 +23,7 @@ const CustomerDashboard = () => {
       const customer = JSON.parse(localStorage.getItem('customer'));
       const email = customer ? customer.email : "guest@example.com"; // Fallback
 
-      const response = await fetch(`http://localhost:5000/api/my-orders?email=${email}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/my-orders?email=${email}`);
       if (response.ok) {
         const data = await response.json();
         setOrders(data);
@@ -34,7 +39,7 @@ const CustomerDashboard = () => {
     if (!window.confirm("Are you sure you want to cancel this order?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/${orderId}/cancel`, {
         method: 'PUT',
       });
 
@@ -78,8 +83,13 @@ const CustomerDashboard = () => {
       <NavBar />
       <div className="container mx-auto px-4 py-8 pt-24">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-         
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+            {customerName && <p className="text-gray-600 mt-1">Welcome back, {customerName}</p>}
+          </div>
+          <a href="/customer/profile" className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
+            My Profile
+          </a>
         </div>
 
         {loading ? (

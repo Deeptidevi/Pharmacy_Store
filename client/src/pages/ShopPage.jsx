@@ -21,7 +21,7 @@ const ShopPage = () => {
       if (searchTerm) queryParams.append('search', searchTerm);
       if (category !== 'All') queryParams.append('category', category);
 
-      const response = await fetch(`http://localhost:5000/api/medicines?${queryParams}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/medicines?${queryParams}`);
       const data = await response.json();
       setMedicines(data);
     } catch (error) {

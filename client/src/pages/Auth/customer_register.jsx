@@ -41,7 +41,7 @@ const CustomerRegister = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/customer_register', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/customer_register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -159,6 +159,7 @@ const CustomerRegister = () => {
                                     name='phone'
                                     type='tel' 
                                     placeholder='98765 43210'
+                                    maxLength={10}
                                     value={formData.phone}
                                     onChange={handleChange}
                                     required

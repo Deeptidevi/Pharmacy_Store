@@ -86,12 +86,7 @@ function App() {
     <main className="w-full min-h-screen bg-black scroll-smooth relative overflow-x-hidden scrollb">
 
     
-      <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-[100]">
-        <div 
-          className="h-full bg-black transition-all duration-300"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
+    
 
     
       <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
@@ -269,19 +264,22 @@ function App() {
           name: "Dr. Sanjay Rajput", 
           role: "Head Pharmacist", 
           location: "MedCare Pharmacy", 
-          quote: "This tool saved us 15 hours a week! The auto inventory feature is a game-changer for our hectic schedule." 
+          quote: "This tool saved us 15 hours a week! The auto inventory feature is a game-changer for our hectic schedule." ,
+          img: "https://randomuser.me/api/portraits/men/32.jpg"
         },
         { 
-          name: "Meera Arora", 
+          name: "Alexa Morgan", 
           role: "Pharmacy Owner", 
           location: "MedTown Health", 
-          quote: "Best investment we've made. The support team is fantastic, and we saw improvements right away." 
+          quote: "Best investment we've made. The support team is fantastic, and we saw improvements right away.",
+          img: "https://randomuser.me/api/portraits/women/44.jpg"
         },
         { 
           name: "Aman Gupta", 
           role: "Inventory Manager", 
           location: "CityMed Pharmacy", 
-          quote: "So user-friendly and feature-packed. Our team got up to speed quickly, and the efficiency boost is incredible!" 
+          quote: "So user-friendly and feature-packed. Our team got up to speed quickly, and the efficiency boost is incredible!" ,
+          img: "https://randomuser.me/api/portraits/men/65.jpg"
         }
       ].map((testimonial, idx) => (
         <div
@@ -295,7 +293,7 @@ function App() {
         >
           {/* Large Background Quote Icon for Decoration */}
           <div className="absolute top-6 right-6 opacity-10 transition-opacity group-hover:opacity-20">
-            <Quote size={48} className="text-white fill-white" />
+            <Quote size={24} className="text-white fill-white" />
           </div>
 
           <div className="relative z-10 flex flex-col h-full justify-between">
@@ -306,7 +304,17 @@ function App() {
             <div className="flex items-center gap-4 pt-6 border-t border-zinc-800 group-hover:border-zinc-700 transition-colors">
               {/* Optional: Initials Avatar if no images are used */}
               <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-sm shrink-0">
-                {testimonial.name.charAt(0)}
+                {
+                  testimonial.img ? (
+                    <img 
+                      src={testimonial.img} 
+                      alt={testimonial.name} 
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    testimonial.name.split(' ').map(n => n[0]).join('')
+                  )
+                }
               </div>
               
               <div>
@@ -379,7 +387,7 @@ function App() {
             <div>
               <h4 className="font-bold mb-6 text-lg">Contact Us</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="/contact" className="hover:text-white transition-colors">Get in Touch</a></li>
+                <li><button onClick={() => navigate('/contact')} className="hover:text-white transition-colors">Get in Touch</button></li>
                 <li><span className="block">support@pharmflow.com</span></li>
                 <li><span className="block">+1 (555) 123-4567</span></li>
               </ul>
@@ -389,7 +397,7 @@ function App() {
           </div>
 
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm">© 2024 Pharmacy Store. All rights reserved.</p>
+            <p className="text-gray-500 text-sm">© 2025 Pharmacy Store. All rights reserved.</p>
           </div>
         </div>
       </footer>

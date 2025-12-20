@@ -13,7 +13,7 @@ const Login = () => {
         setError('');
         if(email && password) {
             try {
-                const response = await fetch('http://localhost:5000/admin_login', {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/admin_login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email,password }),

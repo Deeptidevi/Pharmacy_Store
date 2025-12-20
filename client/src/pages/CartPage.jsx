@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Truck, CheckCircle, Clock, Search, Filter, ChevronDown, MoreHorizontal } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, Search, Filter, ChevronDown, MoreHorizontal, ArrowLeft } from 'lucide-react';
 
-const API_URL = "http://localhost:5000/api/orders";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/orders`;
 
 export const AdminOrdersPage = () =>  {
+  const navigate = useNavigate();
   // Sample orders in the system
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +104,13 @@ export const AdminOrdersPage = () =>  {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6 md:p-12 font-sans">
       <div className="max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="mb-6 flex items-center text-gray-600 hover:text-black transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Back to Dashboard
+        </button>
         
         {/* Header */}
         <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

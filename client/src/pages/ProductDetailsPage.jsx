@@ -16,7 +16,7 @@ const ProductDetailsPage = () => {
 
   const fetchMedicineDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/medicines/${id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/medicines/${id}`);
       if (response.ok) {
         const data = await response.json();
         setMedicine(data);

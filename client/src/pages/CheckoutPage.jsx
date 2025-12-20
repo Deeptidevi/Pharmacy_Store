@@ -61,7 +61,7 @@ const CheckoutPage = () => {
         formDataToSend.append('prescription', prescription);
       }
 
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
         method: 'POST',
         body: formDataToSend,
       });
@@ -166,18 +166,7 @@ const CheckoutPage = () => {
               <div className="bg-white p-6 rounded-xl shadow-sm">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Payment Method</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'Credit Card' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-200'}`}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="Credit Card"
-                      checked={formData.paymentMethod === 'Credit Card'}
-                      onChange={handleInputChange}
-                      className="hidden"
-                    />
-                    <CreditCard className={`w-6 h-6 mr-3 ${formData.paymentMethod === 'Credit Card' ? 'text-purple-600' : 'text-gray-400'}`} />
-                    <span className="font-medium text-gray-900">Credit Card</span>
-                  </label>
+                  
 
                   <label className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'Cash on Delivery' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-200'}`}>
                     <input

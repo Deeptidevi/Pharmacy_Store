@@ -37,7 +37,26 @@ app.use('/uploads', express.static('uploads'));
 
 app.use(cors(
     {
-        origin: ['http://localhost:5173', 'http://localhost:5000', 'https://pharmacy-store-backend.onrender.com', 'https://pharmacy-store-frontend-roan.vercel.app'], 
+        origin: function (origin, callback) {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin) return callback(null, true);
+            
+            const allowedOrigins = [
+                'http://localhost:5173', 
+                'http://localhost:5000', 
+                'https://pharmacy-store-backend.onrender.com', 
+                'https://pharmacy-store-frontend-roan.vercel.app'
+            ];
+            
+            // Allow any Vercel preview deployment for this project
+            if (origin.includes('ojaswi1234s-projects.vercel.app') || 
+                origin.includes('pharmacy-store-frontend') ||
+                allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            
+            callback(new Error('Not allowed by CORS'));
+        },
         credentials: true
     }
 ));

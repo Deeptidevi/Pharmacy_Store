@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Package, Clock, CheckCircle, Truck, AlertCircle, LogOut } from 'lucide-react';
 import NavBar from '../../components/NavBar';
 
 const CustomerDashboard = () => {
-  
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [customerName, setCustomerName] = useState("");
 
   useEffect(() => {
     const customer = JSON.parse(localStorage.getItem('customer'));
-    if (customer && customer.name) {
+    if (!customer) {
+      navigate('/customer/login');
+      return;
+    }
+    if (customer.name) {
       setCustomerName(customer.name);
     }
     fetchOrders();
@@ -21,12 +26,22 @@ const CustomerDashboard = () => {
   const fetchOrders = async () => {
     try {
       const customer = JSON.parse(localStorage.getItem('customer'));
-      const email = customer ? customer.email : "guest@example.com"; // Fallback
+      if (!customer || !customer.email) {
+        console.log("No customer found in localStorage");
+        setLoading(false);
+        return;
+      }
+      
+      const email = customer.email;
+      console.log("Fetching orders for:", email);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/my-orders?email=${email}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/my-orders?email=${encodeURIComponent(email)}`);
       if (response.ok) {
         const data = await response.json();
+        console.log("Orders fetched:", data);
         setOrders(data);
+      } else {
+        console.error("Failed to fetch orders");
       }
     } catch (error) {
       console.error("Error fetching orders:", error);

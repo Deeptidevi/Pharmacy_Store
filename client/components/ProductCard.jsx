@@ -1,10 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Package } from 'lucide-react';
 
 const ProductCard = ({ medicine }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+      {medicine.image ? (
+        <img 
+          src={`${import.meta.env.VITE_API_URL}/${medicine.image.replace(/\\/g, '/')}`} 
+          alt={medicine.name} 
+          className="w-full h-48 object-cover"
+        />
+      ) : (
+        <div className="w-full h-48 bg-purple-50 flex items-center justify-center">
+          <Package className="w-12 h-12 text-purple-300" />
+        </div>
+      )}
       <div className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div>

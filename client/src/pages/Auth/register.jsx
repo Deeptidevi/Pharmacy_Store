@@ -29,7 +29,21 @@ const Register = () => {
                 if (contentType && contentType.indexOf("application/json") !== -1) {
                     const data = await response.json();
                     if (response.ok) {
-                        navigate('/login');
+                        // Auto-login after registration
+                        const loginResponse = await fetch(`${import.meta.env.VITE_API_URL}/admin_login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password }),
+                        });
+                        
+                        if (loginResponse.ok) {
+                            const loginData = await loginResponse.json();
+                            localStorage.setItem('token', loginData.token);
+                            localStorage.setItem('user', JSON.stringify(loginData.user));
+                            navigate('/dashboard');
+                        } else {
+                            navigate('/login');
+                        }
                     } else {
                         setError(data.message || 'Registration failed');
                     }

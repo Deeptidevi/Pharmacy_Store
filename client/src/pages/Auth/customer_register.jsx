@@ -56,8 +56,24 @@ const CustomerRegister = () => {
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 const data = await response.json();
                 if (response.ok) {
-                    alert(data.message || 'Registration successful!');
-                    navigate('/customer/login');
+                    // Auto-login after registration
+                    const loginResponse = await fetch(`${import.meta.env.VITE_API_URL}/customer_login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            email: formData.email, 
+                            password: formData.password 
+                        }),
+                    });
+                    
+                    if (loginResponse.ok) {
+                        const loginData = await loginResponse.json();
+                        localStorage.setItem('customerToken', loginData.token);
+                        localStorage.setItem('customer', JSON.stringify(loginData.customer));
+                        navigate('/customer/dashboard');
+                    } else {
+                        navigate('/customer/login');
+                    }
                 } else {
                     setError(data.message || 'Registration failed');
                 }

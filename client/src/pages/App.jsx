@@ -64,6 +64,24 @@ function App() {
 
   const navigate = useNavigate();
 
+  const handleAdminNavigation = (path) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate(path);
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const handleCustomerNavigation = (path) => {
+    const token = localStorage.getItem('customerToken');
+    if (token) {
+      navigate(path);
+    } else {
+      navigate('/customer/login');
+    }
+  };
+
   return (
     <main className="w-full min-h-screen bg-black scroll-smooth relative overflow-x-hidden scrollb">
 
@@ -331,31 +349,47 @@ function App() {
             <div>
               <h4 className="font-bold mb-6 text-lg">Platform</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Inventory Management</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Order Tracking</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Patient Records</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Analytics</a></li>
+                <li>
+                  <button 
+                    onClick={() => handleAdminNavigation('/admin/inventory')} 
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Inventory Management
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => handleCustomerNavigation('/track')} 
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Order Tracking
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => handleAdminNavigation('/admin/analytics')} 
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Analytics
+                  </button>
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-bold mb-6 text-lg">Support</h4>
+              <h4 className="font-bold mb-6 text-lg">Contact Us</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
+                <li><a href="/contact" className="hover:text-white transition-colors">Get in Touch</a></li>
+                <li><span className="block">support@pharmflow.com</span></li>
+                <li><span className="block">+1 (555) 123-4567</span></li>
               </ul>
             </div>
+
+
           </div>
 
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm">© 2024 Pharmacy Store. All rights reserved.</p>
-            <div className="flex gap-6 text-sm text-gray-500">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Cookies</a>
-            </div>
           </div>
         </div>
       </footer>

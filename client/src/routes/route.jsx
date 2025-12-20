@@ -16,6 +16,7 @@ import CheckoutPage from "../pages/CheckoutPage.jsx";
 import CustomerDashboard from "../pages/CustomerDashboard.jsx";
 import AnalyticsPage from "../pages/AnalyticsPage.jsx";
 import StaffPage from "../pages/StaffPage.jsx";
+import ContactPage from "../pages/ContactPage.jsx";
 
 
 export default function AppRoutes() {
@@ -40,6 +41,7 @@ export default function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/customer/register" element={<CustomerRegister />} />
         <Route path="/customer/login" element={<CustomerLogin />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Routes>
     </BrowserRouter>
   );

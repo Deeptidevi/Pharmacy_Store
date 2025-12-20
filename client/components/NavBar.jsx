@@ -53,7 +53,7 @@ const NavBar = () => {
         {isMainPage ? (
           <>
             <a href="/" className="text-gray-800 cursor-pointer">Home</a>
-            <a href="#" className="text-gray-800 cursor-pointer">Contact</a>
+            <a href="/contact" className="text-gray-800 cursor-pointer">Contact</a>
           </>
         ) : (
           <>

@@ -560,6 +560,26 @@ app.get('/api/my-orders', async (req, res) => {
     }
 });
 
+// PUT - Cancel order (Customer)
+app.put('/api/orders/:id/cancel', async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        
+        if (order.status === 'Delivered' || order.status === 'Out for Delivery' || order.status === 'Cancelled') {
+             return res.status(400).json({ message: "Cannot cancel order at this stage" });
+        }
+
+        order.status = 'Cancelled';
+        await order.save();
+        res.status(200).json({ message: "Order cancelled successfully", order });
+    } catch (err) {
+        res.status(500).json({ message: "Error cancelling order", error: err.message });
+    }
+});
+
 
 // GET analytics data
 app.get('/api/analytics', verifyToken, async (req, res) => {

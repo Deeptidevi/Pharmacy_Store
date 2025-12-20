@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { MapPin, Phone, Truck, CheckCircle, Clock, Package, User, ChevronRight } from 'lucide-react';
+import { MapPin, Phone, Truck, CheckCircle, Clock, Package, User, ChevronRight, Lock } from 'lucide-react';
 
 const API_URL = "http://localhost:5000/api";
 
@@ -15,27 +15,63 @@ export const DeliveryTrackingPage = () => {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [deliveryDays, setDeliveryDays] = useState(null);
 
-  useEffect(() => {
-    fetchLatestOrder();
-  }, []);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  const fetchLatestOrder = async () => {
     try {
+      const response = await fetch('http://localhost:5000/customer_login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+        fetchCustomerOrders(data.customer.email); // Use email to fetch orders
+      } else {
+        setError(data.message || "Login failed");
+        setLoading(false);
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const fetchCustomerOrders = async (customerEmail) => {
+    try {
+      // Fetch all orders and filter by customer email on client side (or update API to filter)
+      // For this implementation, we'll fetch all and filter
       const response = await fetch(`${API_URL}/orders`);
       if (response.ok) {
         const data = await response.json();
-        if (data.length > 0) {
-          // Assuming the API returns orders sorted by date or we sort them
-          // For now, just taking the first one as "latest" for demo
-          const latestOrder = data[0]; 
+        // Filter orders for this customer
+        const customerOrders = data.filter(o => o.customer === customerEmail);
+        
+        if (customerOrders.length > 0) {
+          // Sort by date descending
+          customerOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          const latestOrder = customerOrders[0];
           setOrder(latestOrder);
           updateProgress(latestOrder.status);
+          
+          // Generate random delivery days (1-10)
+          setDeliveryDays(Math.floor(Math.random() * 10) + 1);
         }
       }
     } catch (error) {
-      console.error("Error fetching order:", error);
+      console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
     }
@@ -57,6 +93,61 @@ export const DeliveryTrackingPage = () => {
     profile: "https://cdn-icons-png.flaticon.com/512/147/147144.png",
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full border border-gray-100">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-black text-white rounded-2xl mb-4 shadow-lg">
+              <Lock size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Track Your Order</h2>
+            <p className="text-gray-500 mt-2">Please login to view your delivery status</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                placeholder="Enter your email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Verifying..." : "View Order Status"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -71,6 +162,12 @@ export const DeliveryTrackingPage = () => {
         <Package size={48} className="text-gray-300 mb-4" />
         <h2 className="text-xl font-bold text-gray-900">No Active Orders</h2>
         <p className="text-gray-500 mt-2">You haven't placed any orders yet.</p>
+        <button 
+          onClick={() => setIsAuthenticated(false)}
+          className="mt-6 px-6 py-2 bg-black text-white rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors"
+        >
+          Try Different Account
+        </button>
       </div>
     );
   }
@@ -92,6 +189,11 @@ export const DeliveryTrackingPage = () => {
           <p className="text-sm text-gray-400 mt-1">
             Placed on {new Date(order.createdAt).toLocaleDateString()}
           </p>
+          {order.status !== 'Delivered' && (
+            <div className="mt-4 inline-block bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+              Estimated Delivery: {deliveryDays} {deliveryDays === 1 ? 'day' : 'days'}
+            </div>
+          )}
         </header>
 
         {/* DELIVERY PERSON CARD */}

@@ -38,8 +38,17 @@ const CheckoutPage = () => {
     setLoading(true);
 
     try {
-      const user = JSON.parse(localStorage.getItem('user')); // Assuming user is stored in localStorage
-      const customerEmail = user ? user.email : "guest@example.com"; // Fallback for now
+      // Retrieve customer info from localStorage
+      const customerData = JSON.parse(localStorage.getItem('customer'));
+      
+      // If no customer is logged in, redirect to login or handle guest checkout
+      if (!customerData || !customerData.email) {
+        alert("Please login to place an order.");
+        navigate('/customer/login');
+        return;
+      }
+
+      const customerEmail = customerData.email;
 
       const formDataToSend = new FormData();
       formDataToSend.append('customer', customerEmail);

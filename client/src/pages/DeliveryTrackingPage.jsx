@@ -211,14 +211,20 @@ export const DeliveryTrackingPage = () => {
           <p className="text-sm text-gray-400 mt-1">
             Placed on {new Date(order.createdAt).toLocaleDateString()}
           </p>
-          {order.status !== 'Delivered' && (
+          {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
             <div className="mt-4 inline-block bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
               Estimated Delivery: {deliveryDays} {deliveryDays === 1 ? 'day' : 'days'}
+            </div>
+          )}
+          {order.status === 'Cancelled' && (
+            <div className="mt-4 inline-block bg-red-50 text-red-700 px-4 py-2 rounded-full text-sm font-medium">
+              Order Cancelled
             </div>
           )}
         </header>
 
         {/* DELIVERY PERSON CARD */}
+        {order.status !== 'Cancelled' && (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -248,8 +254,18 @@ export const DeliveryTrackingPage = () => {
             Call Now
           </button>
         </motion.div>
+        )}
 
         {/* TIMELINE */}
+        {order.status === 'Cancelled' ? (
+            <div className="bg-white rounded-xl border border-red-200 shadow-sm p-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 text-red-600 rounded-full mb-4">
+                    <AlertCircle size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">This order has been cancelled</h3>
+                <p className="text-gray-500">If you have any questions, please contact support.</p>
+            </div>
+        ) : (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
           <h3 className="text-lg font-bold mb-8 border-b border-gray-100 pb-4">Delivery Status</h3>
           
@@ -298,6 +314,7 @@ export const DeliveryTrackingPage = () => {
             </div>
           </div>
         </div>
+        )}
 
         {/* DELIVERY NOTES */}
         <div className="mt-8 bg-gray-100 rounded-xl p-6 border border-gray-200">

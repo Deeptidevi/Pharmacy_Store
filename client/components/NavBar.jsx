@@ -4,7 +4,7 @@ import Menu from './menu.jsx';
 
 const NavBar = () => {
   const [isMobile, setisMobile] = useState(false);
-  const [user, setUser] = useState(null);
+  const [userType, setUserType] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
@@ -20,19 +20,30 @@ const NavBar = () => {
     window.addEventListener('resize', handleResize);
     handleResize();
     
-    const storedUser = localStorage.getItem('user') || localStorage.getItem('token');
-    if (storedUser) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUser(true);
-    }
+    const checkAuth = () => {
+      const adminToken = localStorage.getItem('token');
+      const customerToken = localStorage.getItem('customerToken');
+      
+      if (adminToken) {
+        setUserType('admin');
+      } else if (customerToken) {
+        setUserType('customer');
+      } else {
+        setUserType(null);
+      }
+    };
+
+    checkAuth();
 
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [location]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    setUser(null);
+    localStorage.removeItem('customerToken');
+    localStorage.removeItem('customer');
+    setUserType(null);
     navigate('/');
   };
 
@@ -64,8 +75,12 @@ const NavBar = () => {
           </>
         )}
         
-        {user ? (
-          <button onClick={handleLogout} className="bg-red-600 cursor-pointer text-white px-4 py-[5.5px] rounded-full hover:bg-red-700 transition-colors">Logout</button>
+        {userType ? (
+          isMainPage ? (
+            <a href={userType === 'admin' ? "/dashboard" : "/customer/dashboard"} className="bg-gray-800 cursor-pointer text-white px-4 py-[5.5px] rounded-full hover:bg-gray-700 transition-colors">Dashboard</a>
+          ) : (
+            <button onClick={handleLogout} className="bg-red-600 cursor-pointer text-white px-4 py-[5.5px] rounded-full hover:bg-red-700 transition-colors">Logout</button>
+          )
         ) : (
           <a href="/register" className="bg-gray-800 cursor-pointer text-white px-4 py-[5.5px] rounded-full ">Register</a>
         )}

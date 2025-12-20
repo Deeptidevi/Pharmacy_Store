@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Package, Clock, CheckCircle, Truck, AlertCircle, LogOut } from 'lucide-react';
 import NavBar from '../../components/NavBar';
 
 const CustomerDashboard = () => {
-  const navigate = useNavigate();
+  
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,11 +11,7 @@ const CustomerDashboard = () => {
     fetchOrders();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('customerToken');
-    localStorage.removeItem('customer');
-    navigate('/');
-  };
+
 
   const fetchOrders = async () => {
     try {
@@ -62,6 +57,7 @@ const CustomerDashboard = () => {
       case 'Processing': return 'text-blue-600 bg-blue-50';
       case 'Out for Delivery': return 'text-purple-600 bg-purple-50';
       case 'Delivered': return 'text-green-600 bg-green-50';
+      case 'Cancelled': return 'text-red-600 bg-red-50';
       default: return 'text-gray-600 bg-gray-50';
     }
   };
@@ -72,6 +68,7 @@ const CustomerDashboard = () => {
       case 'Processing': return <Package className="w-5 h-5" />;
       case 'Out for Delivery': return <Truck className="w-5 h-5" />;
       case 'Delivered': return <CheckCircle className="w-5 h-5" />;
+      case 'Cancelled': return <AlertCircle className="w-5 h-5" />;
       default: return <AlertCircle className="w-5 h-5" />;
     }
   };
@@ -82,13 +79,7 @@ const CustomerDashboard = () => {
       <div className="container mx-auto px-4 py-8 pt-24">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
+         
         </div>
 
         {loading ? (

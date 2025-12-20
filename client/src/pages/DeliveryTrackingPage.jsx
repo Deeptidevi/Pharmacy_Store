@@ -86,7 +86,29 @@ export const DeliveryTrackingPage = () => {
     }
   };
 
-  const deliveryGuy = {
+  const getDeliveryGuy = (orderId) => {
+    const deliveryGuys = [
+      { name: "Rohan Kumar", phone: "98765 12345", vehicle: "Bike - HP12 AB 4455" },
+      { name: "Amit Singh", phone: "98765 67890", vehicle: "Scooter - DL3C 1234" },
+      { name: "Vikram Malhotra", phone: "91234 56789", vehicle: "Bike - UP16 Z 9988" },
+      { name: "Suresh Raina", phone: "99887 77665", vehicle: "Bike - MH12 X 1122" },
+      { name: "Rahul Dravid", phone: "98123 45678", vehicle: "Scooter - KA01 Y 3344" }
+    ];
+    if (!orderId) return deliveryGuys[0];
+    
+    let hash = 0;
+    for (let i = 0; i < orderId.length; i++) {
+      hash = orderId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % deliveryGuys.length;
+    
+    return {
+        ...deliveryGuys[index],
+        profile: "https://cdn-icons-png.flaticon.com/512/147/147144.png"
+    };
+  };
+
+  const deliveryGuy = order ? getDeliveryGuy(order._id) : {
     name: "Rohan Kumar",
     phone: "98765 12345",
     vehicle: "Bike - HP12 AB 4455",

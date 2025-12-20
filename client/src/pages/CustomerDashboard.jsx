@@ -13,15 +13,15 @@ const CustomerDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('customerToken');
+    localStorage.removeItem('customer');
     navigate('/');
   };
 
   const fetchOrders = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      const email = user ? user.email : "guest@example.com"; // Fallback
+      const customer = JSON.parse(localStorage.getItem('customer'));
+      const email = customer ? customer.email : "guest@example.com"; // Fallback
 
       const response = await fetch(`http://localhost:5000/api/my-orders?email=${email}`);
       if (response.ok) {
@@ -32,6 +32,27 @@ const CustomerDashboard = () => {
       console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
+        method: 'PUT',
+      });
+
+      if (response.ok) {
+        // alert("Order cancelled successfully");
+        fetchOrders(); // Refresh list
+      } else {
+        const data = await response.json();
+        alert(data.message || "Failed to cancel order");
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      alert("Error cancelling order");
     }
   };
 
@@ -114,8 +135,18 @@ const CustomerDashboard = () => {
                   </div>
                   
                   <div className="mt-6 pt-6 border-t border-gray-50 flex justify-between items-center">
-                    <p className="text-gray-600">Total Amount</p>
-                    <p className="text-2xl font-bold text-gray-900">₹{order.total}</p>
+                    <div>
+                      <p className="text-gray-600 text-sm">Total Amount</p>
+                      <p className="text-2xl font-bold text-gray-900">₹{order.total}</p>
+                    </div>
+                    {['Pending', 'Processing'].includes(order.status) && (
+                      <button
+                        onClick={() => handleCancelOrder(order._id)}
+                        className="px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                      >
+                        Cancel Order
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

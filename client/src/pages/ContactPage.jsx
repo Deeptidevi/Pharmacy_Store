@@ -1,5 +1,7 @@
 import React from 'react';
 import { useForm, ValidationError } from '@formspree/react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import NavBar from '../../components/NavBar';
 
 const ContactPage = () => {
@@ -29,6 +31,10 @@ const ContactPage = () => {
     <div className="min-h-screen bg-black text-white">
      
       <div className="container mx-auto px-6 py-24 max-w-4xl">
+        <Link to="/" className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition-colors">
+          <ArrowLeft className="w-6 h-6 mr-2" />
+          Back to Home
+        </Link>
         <h1 className="text-4xl md:text-6xl font-bold pixelify mb-8 text-center">Contact Us</h1>
         <p className="text-gray-400 text-center mb-12 text-lg">
           Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.

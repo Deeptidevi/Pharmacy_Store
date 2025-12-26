@@ -77,7 +77,19 @@ const ShopPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {medicines.length > 0 ? (
               medicines.map((medicine) => (
-                <ProductCard key={medicine._id} medicine={medicine} />
+                <div key={medicine._id} className="relative">
+                  {medicine.quantity === 0 && (
+                    <div className="absolute top-3 right-3 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                      Out of Stock
+                    </div>
+                  )}
+                  {medicine.quantity > 0 && medicine.quantity < 10 && (
+                    <div className="absolute top-3 right-3 z-10 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                      Low Stock: {medicine.quantity} left
+                    </div>
+                  )}
+                  <ProductCard medicine={medicine} />
+                </div>
               ))
             ) : (
               <div className="col-span-full text-center py-12 text-gray-500">

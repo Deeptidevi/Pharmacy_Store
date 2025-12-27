@@ -168,9 +168,9 @@ function App() {
           <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { title: "Quick Inventory Check", description: "Monitor stock levels in real-time and get notified when supplies are running low" },
-              { title: "Auto Restock", description: "Smart reordering so you never run out of essentials" },
+              { title: "Staff Management", description: "Manage pharmacy staff, assign roles, and oversee team operations securely" },
               { title: "Safe Ordering", description: "Secure and traceable purchases every single time" },
-              { title: "Patient Tips", description: "Track medications and send friendly reminders to keep patients on track" }
+              { title: "Detailed Analytics", description: "Visualize sales trends, revenue, and inventory value with interactive charts" }
             ].map((card, index) => (
               <div
                 key={index}

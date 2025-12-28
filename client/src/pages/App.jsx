@@ -359,7 +359,7 @@ function App() {
             <div className="col-span-1 md:col-span-2">
               <h3 className="text-2xl font-bold pixelify mb-4">Pharmacy Store</h3>
               <p className="text-gray-400 max-w-sm mb-6 text-sm leading-relaxed">
-                Streamlining pharmacy operations with cutting-edge inventory tracking and patient management tools. Built for efficiency, designed for care.
+                Streamlining pharmacy operations with cutting-edge inventory management and sales analysis tools. Built for efficiency, designed for care.
               </p>
             </div>
 

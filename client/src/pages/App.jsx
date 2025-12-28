@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom'
 function App() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVisible, setIsVisible] = useState({});
+  const [invertNavbar, setInvertNavbar] = useState(false);
   const lenisRef = useRef(null);
   const sectionsRef = useRef([]);
 
@@ -27,6 +28,14 @@ function App() {
     lenis.on('scroll', ({ scroll, limit }) => {
       const progress = (scroll / limit) * 100;
       setScrollProgress(progress);
+      
+      // Check if navbar overlaps with how-it-works section
+      const howItWorksSection = document.getElementById('how-it-works');
+      if (howItWorksSection) {
+        const rect = howItWorksSection.getBoundingClientRect();
+        // Invert when section is within navbar range (top 80px)
+        setInvertNavbar(rect.top < 80 && rect.bottom > 0);
+      }
     });
 
     const observer = new IntersectionObserver(
@@ -117,7 +126,7 @@ function App() {
         <Pattern />
       </div>
         <div className="absolute top-0 w-full z-50">
-          <NavBar/>
+          <NavBar inverted={invertNavbar}/>
         </div>
         <div 
           className={`z-10 text-center max-w-5xl px-6 transition-all duration-1000 ${
